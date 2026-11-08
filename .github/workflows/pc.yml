@@ -1,0 +1,25 @@
+name: Unlimited Blender PC
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - name: Start Linux Desktop and Tailscale
+        run: |
+          sudo apt update
+          sudo DEBIAN_FRONTEND=noninteractive apt install -y xfce4 xfce4-goodies xrdp xorgxrdp dbus-x11 x11-xserver-utils blender firefox
+          echo "xfce4-session" > /home/runner/.xsession
+          chmod +x /home/runner/.xsession
+          echo "runner:Pass@12345678" | sudo chpasswd
+          sudo mkdir -p /run/xrdp /var/run/xrdp /tmp/.X11-unix
+          sudo chmod 1777 /tmp/.X11-unix
+          sudo adduser xrdp ssl-cert
+          sudo chown -R xrdp:xrdp /etc/xrdp /run/xrdp /var/run/xrdp
+          sudo service xrdp restart
+          curl -fsSL https://tailscale.com/install.sh | sh
+          sudo tailscale up --authkey=${{ secrets.TS_KEY }} --hostname=free-blender-pc --accept-routes
+          sleep 21000
+          
